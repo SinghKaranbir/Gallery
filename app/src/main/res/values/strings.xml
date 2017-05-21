@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Gallery</string>
+    <string name="base_url">http://private-04a55-videoplayer1.apiary-mock.com/</string>
+</resources>
