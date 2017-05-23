@@ -1,5 +1,7 @@
 package com.spartan.karanbir.gallery;
 
+
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -17,11 +19,14 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.yqritc.scalablevideoview.ScalableType;
+import com.yqritc.scalablevideoview.ScalableVideoView;
+
+import java.io.IOException;
 
 /**
  * @author karanbir.
@@ -36,6 +41,7 @@ public class VideoFragment extends Fragment {
     private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
     private int currentWindow;
     private boolean playWhenReady = true;
+    private ScalableVideoView scalableVideoView;
 
     public static VideoFragment newInstance(String videoUrl) {
         VideoFragment videoFragment = new VideoFragment();
@@ -57,70 +63,21 @@ public class VideoFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.video_fragment, container, false);
-        mPlayerView = (SimpleExoPlayerView) view.findViewById(R.id.video_view);
+        scalableVideoView = (ScalableVideoView) view.findViewById(R.id.texture_view);
+        try {
+            scalableVideoView.setDataSource(getActivity(),Uri.parse(mVideoUrl));
+            scalableVideoView.setScalableType(ScalableType.CENTER_CROP);
+            scalableVideoView.prepare(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    scalableVideoView.start();
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         return view;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (Util.SDK_INT > 23) {
-            initializePlayer();
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if ((Util.SDK_INT <= 23 || mPlayer == null)) {
-            initializePlayer();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (Util.SDK_INT <= 23) {
-            releasePlayer();
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (Util.SDK_INT > 23) {
-            releasePlayer();
-        }
-    }
-
-    private void initializePlayer() {
-        if (mPlayer == null) {
-            // a factory to create an AdaptiveVideoTrackSelection
-            TrackSelection.Factory adaptiveTrackSelectionFactory =
-                    new AdaptiveTrackSelection.Factory(BANDWIDTH_METER);
-            // let the factory create a player instance with default components
-            mPlayer = ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(getActivity()),
-                    new DefaultTrackSelector(adaptiveTrackSelectionFactory), new DefaultLoadControl());
-            mPlayerView.setPlayer(mPlayer);
-            mPlayerView.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FILL);
-            mPlayer.setPlayWhenReady(playWhenReady);
-            mPlayer.seekTo(currentWindow, 0);
-        }
-        MediaSource mediaSource = buildMediaSource(Uri.parse(mVideoUrl));
-        mPlayer.prepare(mediaSource, true, false);
-    }
-
-    private void releasePlayer() {
-        if (mPlayer != null) {
-            currentWindow = mPlayer.getCurrentWindowIndex();
-            playWhenReady = mPlayer.getPlayWhenReady();
-            mPlayer.release();
-            mPlayer = null;
-        }
-    }
-
-    private MediaSource buildMediaSource(Uri uri) {
-        return new ExtractorMediaSource(uri, new DefaultHttpDataSourceFactory("ua"),
-                new DefaultExtractorsFactory(), null, null);
     }
 }
