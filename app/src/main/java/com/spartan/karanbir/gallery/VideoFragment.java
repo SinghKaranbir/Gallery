@@ -10,15 +10,20 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
@@ -112,7 +117,9 @@ public class VideoFragment extends Fragment implements SimpleExoPlayer.VideoList
             mPlayer.seekTo(currentWindow, playbackPosition);
         }
         mPlayer.setVideoTextureView(mTextureView);
-        MediaSource mediaSource = buildMediaSource(Uri.parse(mVideoUrl));
+        HttpProxyCacheServer proxy = GalleryApp.getProxy(getActivity());
+        String proxyUrl = proxy.getProxyUrl(mVideoUrl);
+        MediaSource mediaSource = buildMediaSource(proxyUrl);
         LoopingMediaSource loopingSource = new LoopingMediaSource(mediaSource);
         mPlayer.prepare(loopingSource, true, false);
         mPlayer.setVideoListener(this);
@@ -128,9 +135,12 @@ public class VideoFragment extends Fragment implements SimpleExoPlayer.VideoList
         }
     }
 
-    private MediaSource buildMediaSource(Uri uri) {
-        return new ExtractorMediaSource(uri, new DefaultHttpDataSourceFactory("ua"),
-                new DefaultExtractorsFactory(), null, null);
+    private MediaSource buildMediaSource(String url) {
+        DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+        String userAgent = Util.getUserAgent(getActivity(), "Gallery");
+        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(getActivity(), userAgent, bandwidthMeter);
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        return new ExtractorMediaSource(Uri.parse(url), dataSourceFactory, extractorsFactory, null, null);
     }
 
 
