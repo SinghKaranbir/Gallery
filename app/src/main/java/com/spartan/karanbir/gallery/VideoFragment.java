@@ -2,27 +2,13 @@ package com.spartan.karanbir.gallery;
 
 
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.yqritc.scalablevideoview.ScalableType;
 import com.yqritc.scalablevideoview.ScalableVideoView;
 
@@ -35,12 +21,7 @@ import java.io.IOException;
 
 public class VideoFragment extends Fragment {
 
-    private SimpleExoPlayer mPlayer;
-    private SimpleExoPlayerView mPlayerView;
     private String mVideoUrl;
-    private static final DefaultBandwidthMeter BANDWIDTH_METER = new DefaultBandwidthMeter();
-    private int currentWindow;
-    private boolean playWhenReady = true;
     private ScalableVideoView scalableVideoView;
 
     public static VideoFragment newInstance(String videoUrl) {
@@ -65,12 +46,15 @@ public class VideoFragment extends Fragment {
         View view = inflater.inflate(R.layout.video_fragment, container, false);
         scalableVideoView = (ScalableVideoView) view.findViewById(R.id.texture_view);
         try {
-            scalableVideoView.setDataSource(getActivity(),Uri.parse(mVideoUrl));
+            HttpProxyCacheServer proxy = GalleryApp.getProxy(getActivity());
+            String proxyUrl = proxy.getProxyUrl(mVideoUrl);
+            scalableVideoView.setDataSource(proxyUrl);
             scalableVideoView.setScalableType(ScalableType.CENTER_CROP);
-            scalableVideoView.prepare(new MediaPlayer.OnPreparedListener() {
+            scalableVideoView.prepareAsync(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     scalableVideoView.start();
+                    mp.setLooping(true);
                 }
             });
         } catch (IOException e) {
