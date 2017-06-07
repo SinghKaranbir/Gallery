@@ -24,8 +24,10 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * @author karanbir.
@@ -37,7 +39,8 @@ public class VideoFragment extends Fragment implements SimpleExoPlayer.VideoList
     private String mVideoUrl;
 
     private SimpleExoPlayer mPlayer;
-    private TextureView mTextureView;
+    @BindView(R.id.video_view)
+    TextureView mTextureView;
 
     private long playbackPosition;
     private int currentWindow;
@@ -65,7 +68,7 @@ public class VideoFragment extends Fragment implements SimpleExoPlayer.VideoList
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.video_fragment, container, false);
-        mTextureView = (TextureView) view.findViewById(R.id.video_view);
+        ButterKnife.bind(this,view);
         mTextureView.post(new Runnable() {
             @Override
             public void run() {
