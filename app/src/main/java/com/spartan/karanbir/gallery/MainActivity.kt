@@ -16,6 +16,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, OnImageClickedListener {
 
@@ -25,7 +26,7 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, OnImag
 
     private var mVideoPagerAdapter: VideoPagerAdapter? = null
     private var mImagePagerAdapter: ImagePagerAdapter? = null
-    private var mAnimals: ArrayList<Animal>? = null
+    private var mAnimals: ArrayList<Animal>? = ArrayList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +36,6 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, OnImag
         callApi(retrofit = setupRetrofit(getString(R.string.base_url)))
         image_pager.pageMargin = -250
         image_pager.offscreenPageLimit = 3
-        mAnimals = Collections.EMPTY_LIST as ArrayList<Animal>?
         mImagePagerAdapter = ImagePagerAdapter(this,mAnimals)
         mVideoPagerAdapter = VideoPagerAdapter(this,mAnimals)
         mImagePagerAdapter?.setOnImageClickedListener(this)
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, OnImag
         })
 
         image_pager.addOnPageChangeListener(this)
-        image_pager.addOnPageChangeListener(this)
+        video_pager.addOnPageChangeListener(this)
     }
 
     private fun setupRetrofit(baseUrl: String?): Retrofit {
@@ -86,11 +86,11 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, OnImag
 
 
     override fun onPageScrollStateChanged(state: Int) {
-        TODO("not implemented")
+
     }
 
     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-        TODO("not implemented")
+
     }
 
     override fun onPageSelected(position: Int) {

@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import com.google.android.exoplayer2.DefaultLoadControl
@@ -52,9 +53,10 @@ class VideoFragment : Fragment(), SimpleExoPlayer.VideoListener {
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater!!.inflate(R.layout.video_fragment, container, false)
-        video_view!!.post {
-            mWidth = video_view!!.width.toFloat()
-            mHeight = video_view!!.height.toFloat()
+        val textureView = view.findViewById(R.id.texture_view) as TextureView
+        textureView.post {
+            mWidth = texture_view.width.toFloat()
+            mHeight = texture_view.height.toFloat()
         }
 
         return view
@@ -95,7 +97,7 @@ class VideoFragment : Fragment(), SimpleExoPlayer.VideoListener {
             mPlayer!!.playWhenReady = playWhenReady
             mPlayer!!.seekTo(currentWindow, playbackPosition)
         }
-        mPlayer!!.setVideoTextureView(video_view)
+        mPlayer!!.setVideoTextureView(texture_view)
         val proxy = GalleryApp.getProxy(activity)
         val proxyUrl = proxy.getProxyUrl(mVideoUrl)
         val mediaSource = buildMediaSource(proxyUrl)
@@ -125,7 +127,7 @@ class VideoFragment : Fragment(), SimpleExoPlayer.VideoListener {
 
     override fun onVideoSizeChanged(width: Int, height: Int, i2: Int, v: Float) {
         val matrix = getMatrix(width.toFloat(), height.toFloat())
-        video_view!!.setTransform(matrix)
+        texture_view!!.setTransform(matrix)
     }
 
     override fun onRenderedFirstFrame() {
